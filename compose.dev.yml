@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: etc/docker/Dockerfile
+    container_name: test-api-service
+    restart: always
+    environment:
+      KAFKA_BROKER_ADDRESSES: ${APP_KAFKA_BROKER_ADDRESSES}
+      GRPC_ORDERS_ADDRESS: ${APP_GRPC_ORDERS_ADDRESS}
+    ports:
+      - "${APP_HOST_PORT}:${APP_CONTAINER_PORT}"
+    networks:
+      - test-api-service-dev
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500m"
+
+networks:
+  test-api-service-dev:
+    name: test-api-service-dev
+    external: true
