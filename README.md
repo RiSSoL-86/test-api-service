@@ -4,23 +4,24 @@ HTTP service for accepting order write requests and publishing them to the broke
 
 ## Setup
 
-Start only Kafka dependencies:
+Local development:
 
 ```powershell
 make deps
-```
-
-Run the application locally against Docker Kafka:
-
-```powershell
 make run
 ```
+
+`make deps` starts only Kafka and Kafka UI from `compose.dev.local.yml`.
+`make run` starts the app locally with `go run -race ./src`.
 
 Start the full Docker stack:
 
 ```powershell
 make up
 ```
+
+`make up` starts app, Kafka and Kafka UI from `compose.dev.yml`.
+The app image builds the Go binary inside Docker.
 
 Stop the Docker stack:
 
@@ -33,6 +34,19 @@ Run checks:
 ```powershell
 make check
 ```
+
+## Configuration
+
+```text
+KAFKA_BROKER_ADDRESSES=localhost:29092
+APP_KAFKA_BROKER_ADDRESSES=kafka:9092
+APP_HOST_PORT=8080
+APP_CONTAINER_PORT=8080
+```
+
+`KAFKA_BROKER_ADDRESSES` is used by local `make run`.
+`APP_KAFKA_BROKER_ADDRESSES` is used by the app container in the full Docker stack.
+`APP_HOST_PORT:APP_CONTAINER_PORT` publishes the app container to the host.
 
 ## UI
 

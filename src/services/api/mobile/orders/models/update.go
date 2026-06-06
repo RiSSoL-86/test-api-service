@@ -1,10 +1,6 @@
 package models
 
-import (
-	"strings"
-
-	"github.com/danielgtaylor/huma/v2"
-)
+import "github.com/danielgtaylor/huma/v2"
 
 type UpdateOrderRequest struct {
 	Title         *string `json:"title,omitempty" doc:"Short order title"`
@@ -23,20 +19,13 @@ func (r *UpdateOrderRequest) Resolve(_ huma.Context) []error {
 		errs = append(errs, fieldError("body", "must contain at least one field", nil))
 	}
 
-	errs = appendStringLenError(errs, "body.title", r.Title, 3, 120)
-	errs = appendStringLenError(errs, "body.description", r.Description, 10, 1000)
-	errs = appendStringLenError(errs, "body.customer_name", r.CustomerName, 2, 120)
-	errs = appendStringLenError(errs, "body.address", r.Address, 5, 300)
-
-	if r.CustomerPhone != nil && !phonePattern.MatchString(strings.TrimSpace(*r.CustomerPhone)) {
-		errs = append(errs, fieldError("body.customer_phone", "must be a valid phone number", *r.CustomerPhone))
-	}
-	if r.Priority != nil && !isPriority(*r.Priority) {
-		errs = append(errs, fieldError("body.priority", "must be one of low, normal, high", *r.Priority))
-	}
-	if r.Status != nil && !isStatus(*r.Status) {
-		errs = append(errs, fieldError("body.status", "must be one of new, in_progress, done, cancelled", *r.Status))
-	}
+	errs = appendOptionalStringLenError(errs, "body.title", r.Title, titleMinLength, titleMaxLength)
+	errs = appendOptionalStringLenError(errs, "body.description", r.Description, descriptionMinLength, descriptionMaxLength)
+	errs = appendOptionalStringLenError(errs, "body.customer_name", r.CustomerName, customerNameMinLength, customerNameMaxLength)
+	errs = appendOptionalPhoneError(errs, "body.customer_phone", r.CustomerPhone)
+	errs = appendOptionalStringLenError(errs, "body.address", r.Address, addressMinLength, addressMaxLength)
+	errs = appendOptionalPriorityError(errs, "body.priority", r.Priority)
+	errs = appendOptionalStatusError(errs, "body.status", r.Status)
 
 	return errs
 }

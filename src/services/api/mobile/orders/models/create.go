@@ -1,10 +1,6 @@
 package models
 
-import (
-	"strings"
-
-	"github.com/danielgtaylor/huma/v2"
-)
+import "github.com/danielgtaylor/huma/v2"
 
 type CreateOrderRequest struct {
 	Title         string `json:"title" minLength:"3" maxLength:"120" doc:"Short order title"`
@@ -17,12 +13,12 @@ type CreateOrderRequest struct {
 
 func (r *CreateOrderRequest) Resolve(_ huma.Context) []error {
 	var errs []error
-	if !phonePattern.MatchString(strings.TrimSpace(r.CustomerPhone)) {
-		errs = append(errs, fieldError("body.customer_phone", "must be a valid phone number", r.CustomerPhone))
-	}
-	if !isPriority(r.Priority) {
-		errs = append(errs, fieldError("body.priority", "must be one of low, normal, high", r.Priority))
-	}
+	errs = appendRequiredStringLenError(errs, "body.title", r.Title, titleMinLength, titleMaxLength)
+	errs = appendRequiredStringLenError(errs, "body.description", r.Description, descriptionMinLength, descriptionMaxLength)
+	errs = appendRequiredStringLenError(errs, "body.customer_name", r.CustomerName, customerNameMinLength, customerNameMaxLength)
+	errs = appendRequiredPhoneError(errs, "body.customer_phone", r.CustomerPhone)
+	errs = appendRequiredStringLenError(errs, "body.address", r.Address, addressMinLength, addressMaxLength)
+	errs = appendRequiredPriorityError(errs, "body.priority", r.Priority)
 	return errs
 }
 

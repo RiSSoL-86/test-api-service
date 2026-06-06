@@ -3,6 +3,7 @@ package kafka
 import (
 	brokersettings "app/src/app_settings/brokers"
 	"app/src/core/brokers/common"
+	"errors"
 )
 
 type KafkaBroker struct {
@@ -26,5 +27,8 @@ func (b *KafkaBroker) Consumer() common.Consumer {
 }
 
 func (b *KafkaBroker) Close() error {
-	return b.producer.Close()
+	return errors.Join(
+		b.producer.Close(),
+		b.consumer.Close(),
+	)
 }
