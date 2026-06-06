@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/danielgtaylor/huma/v2"
 )
@@ -133,7 +134,8 @@ func appendStringLenError(errs []error, location string, value *string, minLengt
 	}
 
 	trimmed := strings.TrimSpace(*value)
-	if len(trimmed) < minLength || len(trimmed) > maxLength {
+	length := utf8.RuneCountInString(trimmed)
+	if length < minLength || length > maxLength {
 		return append(errs, fieldError(
 			location,
 			fmt.Sprintf("length must be between %d and %d", minLength, maxLength),
