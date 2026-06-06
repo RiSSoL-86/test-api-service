@@ -7,20 +7,19 @@ HTTP service for accepting order write requests and publishing them to the broke
 Local development:
 
 ```powershell
-make deps
-make run
+make local-run
 ```
 
 `make deps` starts only Kafka and Kafka UI from `compose.dev.local.yml`.
-`make run` starts the app locally with `go run -race ./src`.
+`make local-run` starts the app locally with `go run -race ./src`.
 
 Start the full Docker stack:
 
 ```powershell
-make up
+make run
 ```
 
-`make up` starts app, Kafka and Kafka UI from `compose.dev.yml`.
+`make run` starts app, Kafka and Kafka UI from `compose.dev.yml`.
 The app image builds the Go binary inside Docker.
 
 Stop the Docker stack:
