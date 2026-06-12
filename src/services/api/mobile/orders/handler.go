@@ -3,7 +3,6 @@ package orders
 import (
 	commonmodels "app/src/services/api/common/models"
 	"app/src/services/api/mobile/orders/models"
-	"app/src/services/api/mobile/orders/services"
 	"app/src/services/grpc"
 	"context"
 	"errors"
@@ -13,17 +12,17 @@ import (
 )
 
 type OrderHandler struct {
-	services *services.OrderServices
+	service *OrderService
 }
 
-func NewOrderHandler(services *services.OrderServices) *OrderHandler {
-	return &OrderHandler{services: services}
+func NewOrderHandler(service *OrderService) *OrderHandler {
+	return &OrderHandler{service: service}
 }
 
 func (h *OrderHandler) Get(ctx context.Context, input *models.GetOrderInput) (*models.OrderOutput, error) {
-	res, err := h.services.GetOrder.Get(ctx, input.ID)
+	res, err := h.service.Get(ctx, input.ID)
 	if err != nil {
-		if errors.Is(err, services.ErrInvalidOrderID) {
+		if errors.Is(err, ErrInvalidOrderID) {
 			return nil, huma.Error400BadRequest("invalid order id")
 		}
 		if errors.Is(err, grpc.ErrContractNotConfigured) {
@@ -37,7 +36,7 @@ func (h *OrderHandler) Get(ctx context.Context, input *models.GetOrderInput) (*m
 }
 
 func (h *OrderHandler) Create(ctx context.Context, input *models.CreateOrderInput) (*commonmodels.AcceptedOutput, error) {
-	res, err := h.services.CreateOrder.Create(ctx, input.Body)
+	res, err := h.service.Create(ctx, input.Body)
 	if err != nil {
 		log.Printf("Create order error: %v", err)
 		return nil, huma.Error503ServiceUnavailable("failed to enqueue order creation")
@@ -47,9 +46,9 @@ func (h *OrderHandler) Create(ctx context.Context, input *models.CreateOrderInpu
 }
 
 func (h *OrderHandler) Update(ctx context.Context, input *models.UpdateOrderInput) (*commonmodels.AcceptedOutput, error) {
-	res, err := h.services.UpdateOrder.Update(ctx, input.ID, input.Body)
+	res, err := h.service.Update(ctx, input.ID, input.Body)
 	if err != nil {
-		if errors.Is(err, services.ErrInvalidOrderID) {
+		if errors.Is(err, ErrInvalidOrderID) {
 			return nil, huma.Error400BadRequest("invalid order id")
 		}
 		log.Printf("Update order error: %v", err)
@@ -60,9 +59,9 @@ func (h *OrderHandler) Update(ctx context.Context, input *models.UpdateOrderInpu
 }
 
 func (h *OrderHandler) Delete(ctx context.Context, input *models.DeleteOrderInput) (*commonmodels.AcceptedOutput, error) {
-	res, err := h.services.DeleteOrder.Delete(ctx, input.ID)
+	res, err := h.service.Delete(ctx, input.ID)
 	if err != nil {
-		if errors.Is(err, services.ErrInvalidOrderID) {
+		if errors.Is(err, ErrInvalidOrderID) {
 			return nil, huma.Error400BadRequest("invalid order id")
 		}
 		log.Printf("Delete order error: %v", err)
