@@ -2,8 +2,8 @@ package main
 
 import (
 	"app/src/app_settings"
-	"app/src/core/brokers"
 	"app/src/services/api"
+	"app/src/services/brokers"
 	"app/src/services/grpc"
 	"context"
 	"errors"

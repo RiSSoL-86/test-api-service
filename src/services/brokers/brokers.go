@@ -3,9 +3,9 @@ package brokers
 import (
 	brokersettings "app/src/app_settings/brokers"
 	"app/src/core/brokers/common"
-	"app/src/services/kafka"
+	"app/src/services/brokers/kafka"
 )
 
 func NewKafkaBroker(settings *brokersettings.KafkaSettings) common.Broker {
-	return kafka.NewKafkaBroker(settings)
+	return kafka.NewBroker(settings)
 }

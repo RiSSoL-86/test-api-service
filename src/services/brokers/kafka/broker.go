@@ -6,27 +6,27 @@ import (
 	"errors"
 )
 
-type KafkaBroker struct {
+type Broker struct {
 	producer *Producer
 	consumer *Consumer
 }
 
-func NewKafkaBroker(settings *brokersettings.KafkaSettings) *KafkaBroker {
-	return &KafkaBroker{
+func NewBroker(settings *brokersettings.KafkaSettings) *Broker {
+	return &Broker{
 		producer: NewProducer(settings),
 		consumer: NewConsumer(settings),
 	}
 }
 
-func (b *KafkaBroker) Producer() common.Producer {
+func (b *Broker) Producer() common.Producer {
 	return b.producer
 }
 
-func (b *KafkaBroker) Consumer() common.Consumer {
+func (b *Broker) Consumer() common.Consumer {
 	return b.consumer
 }
 
-func (b *KafkaBroker) Close() error {
+func (b *Broker) Close() error {
 	return errors.Join(
 		b.producer.Close(),
 		b.consumer.Close(),
