@@ -40,7 +40,10 @@ func (s *OrderService) Create(ctx context.Context, req models.CreateOrderRequest
 	orderID := uuid.NewString()
 	notificationID := uuid.NewString()
 
-	notification := utils.NewNotification(notificationID, string(OrderNotificationCreate), orderID, req)
+	notification, err := utils.NewNotification(notificationID, string(OrderNotificationCreate), orderID, req)
+	if err != nil {
+		return commonmodels.AcceptedResponse{}, err
+	}
 	if err := s.repository.SendNotification(ctx, notification); err != nil {
 		return commonmodels.AcceptedResponse{}, err
 	}
@@ -54,7 +57,10 @@ func (s *OrderService) Update(ctx context.Context, orderID string, req models.Up
 	}
 
 	notificationID := uuid.NewString()
-	notification := utils.NewNotification(notificationID, string(OrderNotificationUpdate), orderID, req)
+	notification, err := utils.NewNotification(notificationID, string(OrderNotificationUpdate), orderID, req)
+	if err != nil {
+		return commonmodels.AcceptedResponse{}, err
+	}
 	if err := s.repository.SendNotification(ctx, notification); err != nil {
 		return commonmodels.AcceptedResponse{}, err
 	}
@@ -68,7 +74,10 @@ func (s *OrderService) Delete(ctx context.Context, orderID string) (commonmodels
 	}
 
 	notificationID := uuid.NewString()
-	notification := utils.NewNotification(notificationID, string(OrderNotificationDelete), orderID, nil)
+	notification, err := utils.NewNotification(notificationID, string(OrderNotificationDelete), orderID, nil)
+	if err != nil {
+		return commonmodels.AcceptedResponse{}, err
+	}
 	if err := s.repository.SendNotification(ctx, notification); err != nil {
 		return commonmodels.AcceptedResponse{}, err
 	}

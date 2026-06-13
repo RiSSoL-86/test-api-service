@@ -1,19 +1,18 @@
 services:
-  app:
+  api:
     build:
       context: .
       dockerfile: etc/docker/Dockerfile
     container_name: test-api-service
     restart: always
+    network_mode: host
     depends_on:
       kafka-init:
         condition: service_completed_successfully
     environment:
-      APP_CONTAINER_PORT: ${APP_CONTAINER_PORT}
-      KAFKA_BROKER_ADDRESSES: ${APP_KAFKA_BROKER_ADDRESSES}
-      GRPC_ORDERS_ADDRESS: ${APP_GRPC_ORDERS_ADDRESS}
-    ports:
-      - "${APP_HOST_PORT}:${APP_CONTAINER_PORT}"
+      - KAFKA_BROKER_ADDRESSES
+      - GRPC_ORDERS_ADDRESS
+      - APP_CONTAINER_PORT
     logging:
       driver: "json-file"
       options:
@@ -23,18 +22,19 @@ services:
     image: apache/kafka:3.7.0
     restart: always
     container_name: kafka-go
+    network_mode: host
     environment:
-      - KAFKA_NODE_ID
-      - KAFKA_PROCESS_ROLES
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
       - KAFKA_CONTROLLER_QUORUM_VOTERS
       - KAFKA_LISTENERS
       - KAFKA_ADVERTISED_LISTENERS
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
-      - KAFKA_CONTROLLER_LISTENER_NAMES
-      - KAFKA_INTER_BROKER_LISTENER_NAME
-      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
-      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
-      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
       - KAFKA_HEALTHCHECK_BOOTSTRAP_SERVER
     healthcheck:
       test: [ "CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server \"$${KAFKA_HEALTHCHECK_BOOTSTRAP_SERVER}\" --list >/dev/null 2>&1" ]
@@ -49,8 +49,7 @@ services:
   kafka-init:
     image: apache/kafka:3.7.0
     container_name: kafka-init-go
-    environment:
-      - KAFKA_INIT_BOOTSTRAP_SERVER
+    network_mode: host
     depends_on:
       kafka:
         condition: service_healthy
@@ -61,9 +60,11 @@ services:
         --bootstrap-server "$${KAFKA_INIT_BOOTSTRAP_SERVER}"
         --create
         --if-not-exists
-        --topic orders.commands
-        --partitions ${KAFKA_ORDERS_TOPIC_PARTITIONS}
-        --replication-factor ${KAFKA_ORDERS_TOPIC_REPLICATION_FACTOR}
+        --topic orders
+        --partitions 3
+        --replication-factor 1
+    environment:
+      - KAFKA_INIT_BOOTSTRAP_SERVER
     logging:
       driver: "json-file"
       options:
@@ -73,14 +74,14 @@ services:
     image: provectuslabs/kafka-ui:latest
     restart: always
     container_name: kafka-ui-go
+    network_mode: host
     depends_on:
       kafka-init:
         condition: service_completed_successfully
     environment:
       - KAFKA_CLUSTERS_0_NAME
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
-    ports:
-      - "${KAFKA_UI_HOST_PORT}:8080"
+      - SERVER_PORT
     logging:
       driver: "json-file"
       options:

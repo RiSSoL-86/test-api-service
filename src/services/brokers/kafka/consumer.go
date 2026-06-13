@@ -2,7 +2,7 @@ package kafka
 
 import (
 	brokersettings "app/src/app_settings/brokers"
-	"app/src/core/brokers/common"
+	"app/src/core/brokers"
 	"context"
 	"errors"
 	"sync"
@@ -26,7 +26,7 @@ func NewConsumer(settings *brokersettings.KafkaSettings) *Consumer {
 	}
 }
 
-func (c *Consumer) Consume(ctx context.Context, topic string, groupID string, handler common.MessageHandler) error {
+func (c *Consumer) Consume(ctx context.Context, topic string, groupID string, handler brokers.MessageHandler) error {
 	reader := kgo.NewReader(kgo.ReaderConfig{
 		Brokers: c.brokerAddresses,
 		Topic:   topic,
@@ -50,7 +50,7 @@ func (c *Consumer) Consume(ctx context.Context, topic string, groupID string, ha
 			headers[header.Key] = string(header.Value)
 		}
 
-		message := common.Message{
+		message := brokers.Message{
 			Topic:   kafkaMessage.Topic,
 			Key:     kafkaMessage.Key,
 			Value:   kafkaMessage.Value,

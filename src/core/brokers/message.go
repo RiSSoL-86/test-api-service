@@ -1,4 +1,4 @@
-package common
+package brokers
 
 type Message struct {
 	Topic   string

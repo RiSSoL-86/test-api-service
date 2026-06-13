@@ -3,12 +3,13 @@ package orders
 import (
 	commonmodels "app/src/services/api/common/models"
 	"app/src/services/api/mobile/orders/models"
-	"app/src/services/grpc"
 	"context"
 	"errors"
 	"log"
 
 	"github.com/danielgtaylor/huma/v2"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type OrderHandler struct {
@@ -25,8 +26,11 @@ func (h *OrderHandler) Get(ctx context.Context, input *models.GetOrderInput) (*m
 		if errors.Is(err, ErrInvalidOrderID) {
 			return nil, huma.Error400BadRequest("invalid order id")
 		}
-		if errors.Is(err, grpc.ErrContractNotConfigured) {
-			return nil, huma.Error501NotImplemented("orders gRPC contract is not configured")
+		switch status.Code(err) {
+		case codes.NotFound:
+			return nil, huma.Error404NotFound("order not found")
+		case codes.InvalidArgument:
+			return nil, huma.Error400BadRequest("invalid order id")
 		}
 		log.Printf("Get order error: %v", err)
 		return nil, huma.Error503ServiceUnavailable("failed to get order")

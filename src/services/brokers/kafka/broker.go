@@ -2,7 +2,7 @@ package kafka
 
 import (
 	brokersettings "app/src/app_settings/brokers"
-	"app/src/core/brokers/common"
+	"app/src/core/brokers"
 	"errors"
 )
 
@@ -18,11 +18,11 @@ func NewBroker(settings *brokersettings.KafkaSettings) *Broker {
 	}
 }
 
-func (b *Broker) Producer() common.Producer {
+func (b *Broker) Producer() brokers.Producer {
 	return b.producer
 }
 
-func (b *Broker) Consumer() common.Consumer {
+func (b *Broker) Consumer() brokers.Consumer {
 	return b.consumer
 }
 
