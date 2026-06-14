@@ -28,6 +28,6 @@ func NewApiSettings() *ApiSettings {
 
 func (s *ApiSettings) HumaConfig() huma.Config {
 	config := huma.DefaultConfig(s.Title, s.Version)
-	config.DocsRenderer = huma.DocsRendererSwaggerUI
+	config.DocsPath = ""
 	return config
 }

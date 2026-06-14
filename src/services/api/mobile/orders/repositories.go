@@ -1,7 +1,9 @@
 package orders
 
 import (
-	"app/src/core/brokers/common"
+	"app/src/core/brokers"
+	orderspb "app/src/core/proto/orders"
+	orderscommon "app/src/services/api/mobile/orders/common"
 	"app/src/services/api/mobile/orders/models"
 	"app/src/services/grpc"
 	"context"
@@ -10,28 +12,32 @@ import (
 )
 
 const (
-	topic          = "orders.commands"
+	topic          = "orders"
 	publishTimeout = 10 * time.Second
 )
 
 type OrderRepository struct {
-	broker     common.Broker
+	broker     brokers.Broker
 	grpcClient *grpc.Client
 }
 
-func NewOrderRepository(broker common.Broker, grpcClient *grpc.Client) *OrderRepository {
+func NewOrderRepository(broker brokers.Broker, grpcClient *grpc.Client) *OrderRepository {
 	return &OrderRepository{
 		broker:     broker,
 		grpcClient: grpcClient,
 	}
 }
 
-func (r *OrderRepository) Get(_ context.Context, _ string) (models.Order, error) {
-	// TODO: fetch the order over gRPC from the orders service once it exists.
-	return models.Order{}, grpc.ErrContractNotConfigured
+func (r *OrderRepository) Get(ctx context.Context, orderID string) (models.Order, error) {
+	response, err := r.grpcClient.Orders().Get(ctx, &orderspb.GetRequest{Id: orderID})
+	if err != nil {
+		return models.Order{}, err
+	}
+
+	return orderscommon.ToOrderModel(response.GetOrder()), nil
 }
 
-func (r *OrderRepository) SendNotification(ctx context.Context, notification common.Notification) error {
+func (r *OrderRepository) SendNotification(ctx context.Context, notification brokers.Notification) error {
 	body, err := json.Marshal(notification)
 	if err != nil {
 		return err
@@ -40,10 +46,9 @@ func (r *OrderRepository) SendNotification(ctx context.Context, notification com
 	ctx, cancel := context.WithTimeout(ctx, publishTimeout)
 	defer cancel()
 
-	return r.broker.Producer().Publish(ctx, common.Message{
-		Topic:   topic,
-		Key:     []byte(notification.EntityID),
-		Value:   body,
-		Headers: map[string]string{"message_type": notification.Type},
+	return r.broker.Producer().Publish(ctx, brokers.Message{
+		Topic: topic,
+		Key:   []byte(notification.EntityID),
+		Value: body,
 	})
 }

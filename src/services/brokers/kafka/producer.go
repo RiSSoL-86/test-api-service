@@ -2,7 +2,7 @@ package kafka
 
 import (
 	brokersettings "app/src/app_settings/brokers"
-	"app/src/core/brokers/common"
+	"app/src/core/brokers"
 	"context"
 
 	kgo "github.com/segmentio/kafka-go"
@@ -23,7 +23,7 @@ func NewProducer(settings *brokersettings.KafkaSettings) *Producer {
 	}
 }
 
-func (p *Producer) Publish(ctx context.Context, message common.Message) error {
+func (p *Producer) Publish(ctx context.Context, message brokers.Message) error {
 	headers := make([]kgo.Header, 0, len(message.Headers))
 	for key, value := range message.Headers {
 		headers = append(headers, kgo.Header{
